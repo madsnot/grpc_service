@@ -1,21 +1,30 @@
 package server
 
 import (
-	"context"
+	"log"
+	"net"
 
 	"github.com/madsnot/grpc_service/grpc/api"
+	"google.golang.org/grpc"
 )
 
-type GRPCServer struct{}
-
-func (s *GRPCServer) SetImage(ctx context.Context, req *api.SetImageRequest) (res *api.SetImageResponse) {
-	return res
+type GRPCServer struct {
+	api.ImagesHandlerServer
 }
 
-func (s *GRPCServer) GetImagesList(ctx context.Context, req *api.GetImagesListRequest) (res *api.GetImagesListResponse) {
-	return res
-}
+func Run() {
+	serv := grpc.NewServer()
+	grpcServer := &GRPCServer{}
+	api.RegisterImagesHandlerServer(serv, grpcServer)
 
-func (s *GRPCServer) GetImage(ctx context.Context, req *api.GetImageRequest) (res *api.GetImageResponse) {
-	return res
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	if err := serv.Serve(listener); err != nil {
+		log.Println(err)
+		return
+	}
 }
