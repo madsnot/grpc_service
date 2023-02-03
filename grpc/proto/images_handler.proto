@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "/api";
+
+message ImageInfo {
+    string name = 1;
+    string createDate = 2;
+    string updateDate = 3;
+}
+
+message Image {
+    ImageInfo info = 1;
+    bytes data = 2;
+}
+
+message SetImageRequest {
+    Image image = 1;
+}
+
+message SetImageResponse {
+    
+}
+
+message GetImagesListRequest {
+    
+}
+
+message GetImagesListResponse {
+    ImageInfo info = 1;
+}
+
+message GetImageRequest {
+    string name = 1;
+}
+
+message GetImageResponse {
+    Image image = 1;
+}
+
+service ImagesHandler {
+    rpc SetImage(SetImageRequest) returns (SetImageResponse);
+    rpc GetImagesList(GetImagesListRequest) returns (GetImagesListResponse);
+    rpc GetImage(GetImageRequest) returns (GetImageResponse);
+}
