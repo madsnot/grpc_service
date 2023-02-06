@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
@@ -16,17 +15,24 @@ func (s *GRPCServer) SetImage(ctx context.Context, req *api.SetImageRequest) (re
 
 	inputFile, err := os.Open(filePath)
 	if err != nil {
-		log.Println("Open inputFile")
 		return nil, err
 	}
 
 	splitPath := strings.Split(filePath, "/")
 	fileName := splitPath[len(splitPath)-1]
 
-	newFilePath := fmt.Sprintf("C:/Images/%s", fileName)
+	dirPath := "C:/Images"
+	if filesList, _ := os.ReadDir(dirPath); filesList == nil {
+		err := os.Mkdir(dirPath, 0750)
+		if err != nil && !os.IsExist(err) {
+			return nil, err
+		}
+	}
+
+	newFilePath := fmt.Sprintf("%s/%s", dirPath, fileName)
+
 	outputFile, err := os.Create(newFilePath)
 	if err != nil {
-		log.Println("Create outputFile")
 		return nil, err
 	}
 
@@ -35,8 +41,8 @@ func (s *GRPCServer) SetImage(ctx context.Context, req *api.SetImageRequest) (re
 
 	_, err = io.Copy(outputFile, inputFile)
 	if err != nil {
-		log.Println("Write outputFile")
 		return nil, err
 	}
+
 	return new(api.SetImageResponse), nil
 }
