@@ -4,14 +4,20 @@ package proto;
 
 option go_package = "/api";
 
-message Image {
+message ImageInfo {
     string name = 1;
-    string createDate = 2;
-    string updateDate = 3;
+    string format = 2;
+    string createDate = 3;
+    string updateDate = 4;
+}
+
+message Image {
+    ImageInfo info = 1;
+    bytes data = 2;
 }
 
 message SetImageRequest {
-    string name = 1;
+    Image image = 1;
 }
 
 message SetImageResponse {}
@@ -19,11 +25,12 @@ message SetImageResponse {}
 message GetImagesListRequest {}
 
 message GetImagesListResponse {
-    Image image = 1;
+    repeated string list = 1;
 }
 
 message GetImageRequest {
     string name = 1;
+    string format = 2;
 }
 
 message GetImageResponse {
