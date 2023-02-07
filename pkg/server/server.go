@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+var servDirPath = "C:/Images"
+
 type GRPCServer struct {
 	api.ImagesHandlerServer
 }

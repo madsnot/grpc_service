@@ -10,8 +10,6 @@ import (
 )
 
 func (s *GRPCServer) GetImagesList(ctx context.Context, req *api.GetImagesListRequest) (res *api.GetImagesListResponse, err error) {
-	servDirPath := "C:/Images"
-
 	files, _ := os.ReadDir(servDirPath)
 	list := make([]string, len(files))
 	res = &api.GetImagesListResponse{

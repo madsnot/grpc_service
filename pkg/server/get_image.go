@@ -11,8 +11,6 @@ import (
 )
 
 func (s *GRPCServer) GetImage(ctx context.Context, req *api.GetImageRequest) (res *api.GetImageResponse, err error) {
-	servDirPath := "C:/Images"
-
 	fileName := req.GetName()
 	fileFormat := req.GetFormat()
 	filePathTemp := fmt.Sprintf("%s\\%s-*%s", servDirPath, fileName, fileFormat)
