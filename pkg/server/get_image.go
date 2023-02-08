@@ -1,8 +1,9 @@
 package server
 
 import (
-	"context"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,25 +11,23 @@ import (
 	"github.com/madsnot/grpc_service/grpc/api"
 )
 
-func (s *GRPCServer) GetImage(ctx context.Context, req *api.GetImageRequest) (res *api.GetImageResponse, err error) {
+func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler_GetImageServer) (err error) {
 	fileName := req.GetName()
 	fileFormat := req.GetFormat()
 	filePathTemp := fmt.Sprintf("%s\\%s-*%s", servDirPath, fileName, fileFormat)
 
 	files, _ := filepath.Glob(filePathTemp)
 	if len(files) == 0 {
-		return nil, fmt.Errorf("this file doesn`t exist")
+		return fmt.Errorf("this file doesn`t exist")
 	}
 
 	inputFile, err := os.Open(files[0])
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer inputFile.Close()
 
-	info, err := inputFile.Stat()
-	size := info.Size()
-	data := make([]byte, size)
+	info, _ := inputFile.Stat()
 	date := info.ModTime().String()
 	updateDate := strings.Fields(date)[0]
 	filePathTemp = fmt.Sprintf("\\%s-", fileName)
@@ -36,7 +35,7 @@ func (s *GRPCServer) GetImage(ctx context.Context, req *api.GetImageRequest) (re
 	indDot := strings.Index(splitFileName[len(splitFileName)-1], ".")
 	createDate := splitFileName[len(splitFileName)-1][:indDot]
 
-	res = &api.GetImageResponse{
+	res := &api.GetImageResponse{
 		Image: &api.Image{
 			Info: &api.ImageInfo{
 				Name:       fileName,
@@ -44,14 +43,27 @@ func (s *GRPCServer) GetImage(ctx context.Context, req *api.GetImageRequest) (re
 				CreateDate: createDate,
 				UpdateDate: updateDate,
 			},
-			Data: data,
 		},
 	}
 
-	_, err = inputFile.Read(res.Image.Data)
-	if err != nil {
-		return nil, err
+	log.Println("Start download image:", fileName+fileFormat)
+
+	chunk := make([]byte, 100000)
+	ind := 1
+	for {
+		n, err := inputFile.Read(chunk)
+		if err == io.EOF {
+			log.Println("End download image:", fileName+fileFormat)
+			return nil
+		}
+
+		res.Image.Data = chunk[:n]
+		if err = stream.Send(res); err != nil {
+			return err
+		}
+
+		log.Println(fileName+fileFormat, ": Download chunk #", ind)
+		ind++
 	}
 
-	return res, nil
 }

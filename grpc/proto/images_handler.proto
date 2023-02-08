@@ -38,7 +38,7 @@ message GetImageResponse {
 }
 
 service ImagesHandler {
-    rpc SetImage(SetImageRequest) returns (SetImageResponse);
+    rpc SetImage(stream SetImageRequest) returns (SetImageResponse);
     rpc GetImagesList(GetImagesListRequest) returns (GetImagesListResponse);
-    rpc GetImage(GetImageRequest) returns (GetImageResponse);
+    rpc GetImage(GetImageRequest) returns (stream GetImageResponse);
 }
