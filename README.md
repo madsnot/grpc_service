@@ -2,7 +2,7 @@
 Test task for TAGES
 
 ```
-https://github.com/madsnot/grpc_service.git
+git clone https://github.com/madsnot/grpc_service.git
 ```
 
 ## Сборка проекта и запуск
