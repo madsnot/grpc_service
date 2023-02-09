@@ -10,15 +10,16 @@ import (
 	"time"
 
 	"github.com/madsnot/grpc_service/grpc/api"
+	"github.com/madsnot/grpc_service/pkg/errors"
 )
 
-func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err error) {
+func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) error {
 	var newFilePath string
 
 	if files, _ := os.ReadDir(servDirPath); files == nil {
 		err := os.Mkdir(servDirPath, 0750)
 		if err != nil && !os.IsExist(err) {
-			return err
+			return errors.InternalServerError{Msg: err.Error()}.Error()
 		}
 	}
 
@@ -27,7 +28,13 @@ func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err erro
 		return nil
 	}
 
-	log.Println("->Start upload image:", req.Image.Info.Name+req.Image.Info.Format)
+	fileFullName := req.Image.Info.Name + req.Image.Info.Format
+
+	if req.Image.Info.Name == "" || req.Image.Info.Format == "" {
+		return errors.InvalidNameError{File: fileFullName}.Error()
+	}
+
+	log.Println("->Start upload image:", fileFullName)
 
 	fileNameTemp := fmt.Sprintf("%s/%s-*%s", servDirPath, req.Image.Info.Name, req.Image.Info.Format)
 	if files, _ := filepath.Glob(fileNameTemp); len(files) != 0 {
@@ -41,15 +48,14 @@ func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err erro
 
 	file, err := os.OpenFile(newFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		return err
+		return errors.InternalServerError{Msg: err.Error()}.Error()
 	}
 	defer file.Close()
 
-	fileFullName := req.Image.Info.Name + req.Image.Info.Format
 	ind := 1
 	_, err = file.Write(req.Image.Data)
 	if err != nil {
-		return err
+		return errors.InternalServerError{Msg: err.Error()}.Error()
 	}
 	log.Println(fileFullName, ": Upload chunk #", ind)
 
@@ -63,7 +69,7 @@ func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err erro
 
 		_, err = file.Write(req.Image.Data)
 		if err != nil {
-			return err
+			return errors.InternalServerError{Msg: err.Error()}.Error()
 		}
 
 		log.Println(fileFullName, ": Upload chunk #", ind)

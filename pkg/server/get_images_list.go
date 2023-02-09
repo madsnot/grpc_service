@@ -3,10 +3,12 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/madsnot/grpc_service/grpc/api"
+	"github.com/madsnot/grpc_service/pkg/errors"
 )
 
 func (s *GRPCServer) GetImagesList(ctx context.Context, req *api.GetImagesListRequest) (res *api.GetImagesListResponse, err error) {
@@ -19,7 +21,7 @@ func (s *GRPCServer) GetImagesList(ctx context.Context, req *api.GetImagesListRe
 	for ind, file := range files {
 		info, err := file.Info()
 		if err != nil {
-			return nil, err
+			return nil, errors.InternalServerError{Msg: err.Error()}.Error()
 		}
 
 		fileFullName := file.Name()
@@ -36,6 +38,8 @@ func (s *GRPCServer) GetImagesList(ctx context.Context, req *api.GetImagesListRe
 		imageInfo := fmt.Sprintf("%s | %s | %s", fileName, createDate, updateDate)
 		list[ind] = imageInfo
 	}
+
+	log.Println("->Get list")
 
 	return res, nil
 }

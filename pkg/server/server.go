@@ -6,10 +6,9 @@ import (
 	"net"
 
 	"github.com/madsnot/grpc_service/grpc/api"
+	"github.com/madsnot/grpc_service/pkg/errors"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const servDirPath = "C:/Images"
@@ -30,8 +29,7 @@ func Run() {
 				return handler(srv, stream)
 			}
 
-			return status.Errorf(codes.ResourceExhausted,
-				"%s is rejected because of the limit, please retry later.", info.FullMethod)
+			return errors.ConnLimitExceededError{Method: info.FullMethod}.Error()
 		}),
 
 		grpc.UnaryInterceptor(func(ctx context.Context, req interface{},
@@ -41,8 +39,7 @@ func Run() {
 				return handler(ctx, req)
 			}
 
-			return nil, status.Errorf(codes.ResourceExhausted,
-				"%s is rejected because of the limit, please retry later.", info.FullMethod)
+			return nil, errors.ConnLimitExceededError{Method: info.FullMethod}.Error()
 		}),
 	)
 
@@ -56,7 +53,7 @@ func Run() {
 	}
 
 	if err := serv.Serve(listener); err != nil {
-		log.Println("Serve", err)
+		log.Println(err)
 		return
 	}
 }

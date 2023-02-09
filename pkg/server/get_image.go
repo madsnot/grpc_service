@@ -9,21 +9,22 @@ import (
 	"strings"
 
 	"github.com/madsnot/grpc_service/grpc/api"
+	"github.com/madsnot/grpc_service/pkg/errors"
 )
 
-func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler_GetImageServer) (err error) {
+func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler_GetImageServer) error {
 	fileName := req.GetName()
 	fileFormat := req.GetFormat()
 	filePathTemp := fmt.Sprintf("%s\\%s-*%s", servDirPath, fileName, fileFormat)
 
 	files, _ := filepath.Glob(filePathTemp)
 	if len(files) == 0 {
-		return fmt.Errorf("this file doesn`t exist")
+		return errors.NotExistError{File: fileName + fileFormat}.Error()
 	}
 
 	inputFile, err := os.Open(files[0])
 	if err != nil {
-		return err
+		return errors.InternalServerError{Msg: err.Error()}.Error()
 	}
 	defer inputFile.Close()
 
@@ -46,23 +47,25 @@ func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler
 		},
 	}
 
-	log.Println("->Start download image:", fileName+fileFormat)
+	fileFullName := fileName + fileFormat
+
+	log.Println("->Start download image:", fileFullName)
 
 	chunk := make([]byte, 100000)
 	ind := 1
 	for {
 		n, err := inputFile.Read(chunk)
 		if err == io.EOF {
-			log.Println("<-End download image:", fileName+fileFormat)
+			log.Println("<-End download image:", fileFullName)
 			return nil
 		}
 
 		res.Image.Data = chunk[:n]
 		if err = stream.Send(res); err != nil {
-			return err
+			return errors.InternalServerError{Msg: err.Error()}.Error()
 		}
 
-		log.Println(fileName+fileFormat, ": Download chunk #", ind)
+		log.Println(fileFullName, ": Download chunk #", ind)
 		ind++
 	}
 

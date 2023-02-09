@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	golang.org/x/time v0.3.0
-	google.golang.org/grpc v1.52.3
+	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 )
 
