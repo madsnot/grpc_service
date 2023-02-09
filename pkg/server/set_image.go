@@ -27,7 +27,7 @@ func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err erro
 		return nil
 	}
 
-	log.Println("Start upload image:", req.Image.Info.Name+req.Image.Info.Format)
+	log.Println("->Start upload image:", req.Image.Info.Name+req.Image.Info.Format)
 
 	fileNameTemp := fmt.Sprintf("%s/%s-*%s", servDirPath, req.Image.Info.Name, req.Image.Info.Format)
 	if files, _ := filepath.Glob(fileNameTemp); len(files) != 0 {
@@ -57,7 +57,7 @@ func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) (err erro
 		req, err := stream.Recv()
 		ind++
 		if err == io.EOF {
-			log.Println("End upload image:", fileFullName)
+			log.Println("<-End upload image:", fileFullName)
 			return nil
 		}
 

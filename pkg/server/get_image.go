@@ -46,14 +46,14 @@ func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler
 		},
 	}
 
-	log.Println("Start download image:", fileName+fileFormat)
+	log.Println("->Start download image:", fileName+fileFormat)
 
 	chunk := make([]byte, 100000)
 	ind := 1
 	for {
 		n, err := inputFile.Read(chunk)
 		if err == io.EOF {
-			log.Println("End download image:", fileName+fileFormat)
+			log.Println("<-End download image:", fileName+fileFormat)
 			return nil
 		}
 
