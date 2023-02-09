@@ -13,7 +13,7 @@ import (
 	"github.com/madsnot/grpc_service/pkg/errors"
 )
 
-func (s *GRPCServer) SetImage(stream api.ImagesHandler_SetImageServer) error {
+func (s *GRPCServer) UploadImage(stream api.ImagesHandler_UploadImageServer) error {
 	var newFilePath string
 
 	if files, _ := os.ReadDir(servDirPath); files == nil {

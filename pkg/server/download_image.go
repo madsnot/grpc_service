@@ -12,7 +12,7 @@ import (
 	"github.com/madsnot/grpc_service/pkg/errors"
 )
 
-func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler_GetImageServer) error {
+func (s *GRPCServer) DownloadImage(req *api.DownloadImageRequest, stream api.ImagesHandler_DownloadImageServer) error {
 	fileName := req.GetName()
 	fileFormat := req.GetFormat()
 	filePathTemp := fmt.Sprintf("%s\\%s-*%s", servDirPath, fileName, fileFormat)
@@ -36,7 +36,7 @@ func (s *GRPCServer) GetImage(req *api.GetImageRequest, stream api.ImagesHandler
 	indDot := strings.Index(splitFileName[len(splitFileName)-1], ".")
 	createDate := splitFileName[len(splitFileName)-1][:indDot]
 
-	res := &api.GetImageResponse{
+	res := &api.DownloadImageResponse{
 		Image: &api.Image{
 			Info: &api.ImageInfo{
 				Name:       fileName,

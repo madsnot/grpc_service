@@ -16,11 +16,11 @@ message Image {
     bytes data = 2;
 }
 
-message SetImageRequest {
+message UploadImageRequest {
     Image image = 1;
 }
 
-message SetImageResponse {}
+message UploadImageResponse {}
 
 message GetImagesListRequest {}
 
@@ -28,17 +28,17 @@ message GetImagesListResponse {
     repeated string list = 1;
 }
 
-message GetImageRequest {
+message DownloadImageRequest {
     string name = 1;
     string format = 2;
 }
 
-message GetImageResponse {
+message DownloadImageResponse {
     Image image = 1;
 }
 
 service ImagesHandler {
-    rpc SetImage(stream SetImageRequest) returns (SetImageResponse);
+    rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse);
     rpc GetImagesList(GetImagesListRequest) returns (GetImagesListResponse);
-    rpc GetImage(GetImageRequest) returns (stream GetImageResponse);
+    rpc DownloadImage(DownloadImageRequest) returns (stream DownloadImageResponse);
 }
